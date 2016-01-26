@@ -1,2 +1,2 @@
-pkg/
-src/github.com/
+pkg/*
+src/github.com/*
