@@ -6,5 +6,5 @@ import (
 )
 
 func (*CtrlStr) Get_About_Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "get about/index")
+	fmt.Fprint(w, "get about/index\n")
 }
