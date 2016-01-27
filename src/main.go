@@ -6,6 +6,7 @@ import (
 	// "fmt"
 	"log"
 	"net/http"
+	"runtime"
 
 	ctrl "controller"
 
@@ -13,6 +14,8 @@ import (
 )
 
 func main() {
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	router := httprouter.New()
 	object := reflect.ValueOf(&ctrl.CtrlStr{})
@@ -57,7 +60,7 @@ func main() {
 		}
 	}
 
-	log.Println("ListenAndServe :8088")
-	log.Fatal(http.ListenAndServe(":8088", router))
+	log.Println("ListenAndServe :8089")
+	log.Fatal(http.ListenAndServe(":8089", router))
 
 }
