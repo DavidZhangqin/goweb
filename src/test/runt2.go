@@ -11,8 +11,6 @@ import (
 	ctrl "controller"
 )
 
-type ApiHandler struct{}
-
 var Actions *ctrl.CtrlStr
 
 func main() {

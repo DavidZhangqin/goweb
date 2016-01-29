@@ -2,12 +2,16 @@ package controller
 
 import (
 	"fmt"
-	// "log"
 	"net/http"
+
+	log "github.com/cihub/seelog"
+	"github.com/gorilla/context"
 )
 
 func (*CtrlStr) Get_Site_Index(w http.ResponseWriter, r *http.Request) {
-	// log.Println("site index")
+	// log.Trace("site index")
+	p := context.Get(r, "params")
+	log.Tracef("sitep: %v", p)
 	fmt.Fprint(w, "get site/index\n")
 }
 

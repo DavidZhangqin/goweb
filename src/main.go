@@ -1,66 +1,48 @@
 package main
 
 import (
-	"reflect"
-	"strings"
-	// "fmt"
-	"log"
 	"net/http"
+	"net/http/pprof"
+	_ "net/http/pprof"
 	"runtime"
 
 	ctrl "controller"
+	"util"
 
+	log "github.com/cihub/seelog"
 	"github.com/julienschmidt/httprouter"
 )
 
-func main() {
-
+func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	util.NewLogs()
+}
 
-	router := httprouter.New()
-	object := reflect.ValueOf(&ctrl.CtrlStr{})
-	objectType := object.Type()
-	for i := 0; i < object.NumMethod(); i++ {
-		methodName := objectType.Method(i).Name
-		log.Println(methodName)
-		methodSlice := strings.Split(strings.ToLower(methodName), "_")
-		if len(methodSlice) != 3 {
-			continue
-		}
-		var (
-			rMethod string
-			rPath   []string
-		)
-		validMethos := map[string]string{
-			"get":    "GET",
-			"post":   "POST",
-			"put":    "PUT",
-			"delete": "DELETE",
-			"patch":  "PATCH",
-		}
-		rMethod = "GET"
-		if v, ok := validMethos[rMethod]; ok {
-			rMethod = v
-		} else {
-			rMethod = "GET"
-		}
-		if methodSlice[2] == "index" {
-			rPath = append(rPath, "/"+methodSlice[1])
-		}
-		rPath = append(rPath, "/"+methodSlice[1]+"/"+methodSlice[2])
+func main() {
+	defer log.Flush()
+	log.Infof("app start")
 
-		f := object.Method(i)
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			in := []reflect.Value{reflect.ValueOf(w), reflect.ValueOf(r)}
-			f.Call(in)
-		}
-		log.Println(rMethod, rPath)
-		for _, v := range rPath {
-			router.HandlerFunc(rMethod, v, fn)
-		}
+	router := ctrl.RouteRegister()
+	router.GET("/debug/pprof/", PprofIndex)
+	router.GET("/debug/pprof/:name", Pprof)
+	log.Info(http.ListenAndServe(":8089", router))
+}
+
+func PprofIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	pprof.Index(w, r)
+}
+
+func Pprof(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	switch p.ByName("name") {
+	case "profile":
+		pprof.Profile(w, r)
+	case "symbol":
+		pprof.Symbol(w, r)
+	case "trace":
+		pprof.Trace(w, r)
+	case "cmdline":
+		pprof.Cmdline(w, r)
+	default:
+		pprof.Index(w, r)
 	}
-
-	log.Println("ListenAndServe :8089")
-	log.Fatal(http.ListenAndServe(":8089", router))
-
 }
