@@ -19,6 +19,6 @@ func main() {
 func Login(w http.ResponseWriter, r *http.Request) {
 	sess := session.Start(w, r)
 	sess.Set("id", 123)
-	user_id := sess.Get("id")
-	fmt.Fprint(w, "user id %d", user_id.(int))
+	user_id, _ := sess.Get("id")
+	fmt.Fprintf(w, "user id %d", user_id.(int))
 }

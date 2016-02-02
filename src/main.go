@@ -1,31 +1,67 @@
 package main
 
 import (
+	"lib/session"
 	"net/http"
 	"net/http/pprof"
-	_ "net/http/pprof"
+	"os"
+	"os/signal"
 	"runtime"
 
-	ctrl "controller"
+	// ctrl "controller"
+	"route"
 	"util"
 
 	log "github.com/cihub/seelog"
 	"github.com/julienschmidt/httprouter"
 )
 
+var config map[string]string
+
 func init() {
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	// log init
 	util.NewLogs()
+
 }
 
 func main() {
 	defer log.Flush()
 	log.Infof("app start")
 
-	router := ctrl.RouteRegister()
-	router.GET("/debug/pprof/", PprofIndex)
-	router.GET("/debug/pprof/:name", Pprof)
-	log.Info(http.ListenAndServe(":8089", router))
+	// load config
+	config = util.LoadConfig()
+	log.Info(config)
+	// session init
+	session.LoadSession(config["session.name"], config["session.maxAge"])
+
+	go route.Register()
+	// router := ctrl.RouteRegister()
+	// router := route.Register()
+	// router.GET("/debug/pprof/", PprofIndex)
+	// router.GET("/debug/pprof/:name", Pprof)
+	// go func() {
+	// 	log.Info("listen and serve 8089")
+	// 	log.Info(http.ListenAndServe(":8089", router))
+	// }()
+
+	sigChan := make(chan int)
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, os.Kill)
+		for {
+			select {
+			case <-c:
+				log.Info("App quit by signal")
+				sigChan <- 1
+			case <-util.ExitChan:
+				log.Info("App quit manually")
+				sigChan <- 1
+			}
+		}
+	}()
+	<-sigChan
 }
 
 func PprofIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

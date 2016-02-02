@@ -1,11 +1,18 @@
 package session
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"io"
 	"net/http"
 )
 
-func GetSessId(r *http.Request) string {
-	return "abcdefg"
+func GetSessId(_ *http.Request) string {
+	b := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
 }
 
 var Name string
