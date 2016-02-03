@@ -4,18 +4,27 @@ import (
 	"fmt"
 	"net/http"
 
+	"lib/dav"
+
 	log "github.com/cihub/seelog"
-	"github.com/gorilla/context"
 )
 
-func (*CtrlStr) Get_Site_Index(w http.ResponseWriter, r *http.Request) {
-	// log.Trace("site index")
-	p := context.Get(r, "params")
-	log.Tracef("sitep: %v", p)
-	fmt.Fprint(w, "get site/index\n")
+type Site struct{}
+
+func (*Site) Test(c *dav.Context) {
+	name := c.P.ByName("name")
+	log.Tracef("hello %s", name)
+	fmt.Fprintf(c.W, "hello %s", name)
 }
 
-func (*CtrlStr) Get_Site_Hello(w http.ResponseWriter, r *http.Request) {
+func (*Site) Index(c *dav.Context) {
+	// log.Trace("site index")
+	http.Error(c.W, "it is a http error", 403)
+	// fmt.Fprint(w, "get site/index\n")
+}
+
+func (*Site) Hello(c *dav.Context) {
 	// log.Println("site hello")
-	fmt.Fprint(w, "hello world!\n")
+	log.Tracef("hello %s\n", c.P.ByName("name"))
+	fmt.Fprintf(c.W, "hello %s!\n", c.P.ByName("name"))
 }

@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	log "github.com/cihub/seelog"
-	"github.com/gorilla/context"
-	"github.com/julienschmidt/httprouter"
 )
 
 func LogRequest(h http.Handler) http.Handler {

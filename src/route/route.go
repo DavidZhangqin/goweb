@@ -1,45 +1,48 @@
 package route
 
 import (
-	"fmt"
 	"net/http"
 
-	log "github.com/cihub/seelog"
-	"github.com/gorilla/context"
+	ct "controller"
+	"lib/dav"
+	"lib/session"
+	"util"
+
 	"github.com/julienschmidt/httprouter"
 )
 
-func Register() {
+func Register() *httprouter.Router {
 	router := httprouter.New()
 
-	router.GET("/test", Test)
-	router.GET("/hello/:name", Hello)
+	about := &ct.About{}
+	router.GET("/about", Bind(about.Index))
 
-	log.Info("listen and serve 8089")
-	log.Info(http.ListenAndServe(":8089", middleHandle(router)))
-}
+	site := &ct.Site{}
+	router.GET("/site", Bind(site.Index))
+	router.GET("/site/hello/:name", Bind(site.Hello))
+	router.POST("/site/hello/:name", Bind(site.Hello))
+	router.GET("/site/test/:name", Bind(site.Test))
 
-func Test(w http.ResponseWriter, r *http.Request) {
-	log.Info("regist ", r.Method)
-	fmt.Fprint(w, "register")
-}
-func Hello(w http.ResponseWriter, r *http.Request) {
-	log.Info("hello ", r.Method)
-	fmt.Fprint(w, "register")
-}
-
-func (r *httprouter.Router) Regist(method, path string, h http.HandleFunc) httprouter.Handle {
-	h = func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		context.Set(r, "params", p)
-		h.ServeHTTP(w, r)
+	// debug pprof switch
+	if util.IsDebug {
+		pprof := &ct.Pprof{}
+		router.GET("/debug/pprof/", Bind(pprof.Index))
+		router.GET("/debug/pprof/:name", Bind(pprof.Cont))
 	}
-	r.Handle(method, path, h)
-	return
+	return router
+}
+
+func Bind(h dav.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		s := session.Start(w, r)
+		// auth TODO
+		c := dav.NewContext(w, r, p, s)
+		h(c)
+	}
 }
 
 // middle handle
-func middleHandle(h http.Handler) http.Handler {
-	h = context.ClearHandler(h)
+func MiddleHandle(h http.Handler) http.Handler {
 	h = LogRequest(h)
 	return h
 }

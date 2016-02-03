@@ -2,9 +2,11 @@ package controller
 
 import (
 	"fmt"
-	"net/http"
+	"lib/dav"
 )
 
-func (*CtrlStr) Get_About_Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "get about/index\n")
+type About struct{}
+
+func (*About) Index(c *dav.Context) {
+	fmt.Fprint(c.W, "get about/index\n")
 }

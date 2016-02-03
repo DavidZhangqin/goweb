@@ -9,13 +9,15 @@ import (
 )
 
 var ExitChan chan int
+var IsDebug bool
 
 var confFile string
 
 func init() {
 	ExitChan = make(chan int)
 
-	flag.StringVar(&confFile, "conf", "", "-conf=/path/to/config.ini")
+	flag.StringVar(&confFile, "conf", "./src/config/config.ini", "-conf=/path/to/config.ini")
+	flag.BoolVar(&IsDebug, "debug", false, "-debug")
 	flag.Parse()
 }
 
