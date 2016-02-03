@@ -1,13 +1,12 @@
 package main
 
 import (
-	"lib/session"
 	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 
-	// ctrl "controller"
+	"lib/session"
 	"route"
 	"util"
 

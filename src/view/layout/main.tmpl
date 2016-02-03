@@ -1,0 +1,12 @@
+{{define "main"}}
+<html>
+	<header>
+		<title>{{template "title" .}}</title>
+		<link type="text/css" rel="stylesheet" href="../../public/css/main.css">
+	</header>
+	<body>
+	<p>main: {{.Name}}</p>	
+	{{template "content" .}}
+	</body>
+</html>
+{{end}}
