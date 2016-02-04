@@ -7,6 +7,8 @@ import (
 	"runtime"
 
 	"lib/session"
+	"lib/view"
+	"lib/view/plugin"
 	"route"
 	"util"
 
@@ -29,11 +31,24 @@ func main() {
 
 	// load config
 	config = util.LoadConfig()
-	log.Info(config)
+	log.Debug(config)
 	// session init
 	session.LoadSession(config["session.name"], config["session.maxAge"])
 	// route init
+	route.LoadRoute(config["static.base"])
 	router := route.Register()
+	// view init
+	var isCache bool
+	if config["view.isCache"] == "true" {
+		isCache = true
+	} else {
+		isCache = false
+	}
+	view.LoadView(config["view.postFix"], config["view.layoutFolder"], config["view.defaultLayout"],
+		config["view.folder"], isCache)
+	view.LoadPlugins(
+		plugin.NoEscape(),
+	)
 
 	go func() {
 		log.Info("listen and serve 8089")

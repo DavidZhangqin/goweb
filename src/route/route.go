@@ -11,8 +11,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+var staticBase string
+
 func Register() *httprouter.Router {
 	router := httprouter.New()
+
+	router.GET("/public/*path", F2R(StaticHandle))
 
 	about := &ct.About{}
 	router.GET("/about", Bind(about.Index))
@@ -26,9 +30,9 @@ func Register() *httprouter.Router {
 	// debug pprof switch
 	if util.IsDebug {
 		pprof := &ct.Pprof{}
-		router.GET("/debug/pprof/", Bind(pprof.Index))
-		router.GET("/debug/pprof/:name", Bind(pprof.Cont))
+		router.GET("/debug/pprof/*name", pprof.Index)
 	}
+
 	return router
 }
 
@@ -45,4 +49,23 @@ func Bind(h dav.Handle) httprouter.Handle {
 func MiddleHandle(h http.Handler) http.Handler {
 	h = LogRequest(h)
 	return h
+}
+
+func LoadRoute(sPath string) {
+	staticBase = sPath
+}
+
+func StaticHandle(w http.ResponseWriter, r *http.Request) {
+	// Disable listing directories
+	// if strings.HasSuffix(r.URL.Path, "/") {
+	// 	http.NotFound(w, r)
+	// 	return
+	// }
+	var filePath string
+	if staticBase == "/" {
+		filePath = r.URL.Path[1:]
+	} else {
+		filePath = staticBase + r.URL.Path[1:]
+	}
+	http.ServeFile(w, r, filePath)
 }

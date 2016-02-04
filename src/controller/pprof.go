@@ -1,27 +1,30 @@
 package controller
 
 import (
-	"lib/dav"
+	// "lib/dav"
+	"net/http"
 	"net/http/pprof"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type Pprof struct{}
 
-func (*Pprof) Index(c *dav.Context) {
-	pprof.Index(c.W, c.R)
-}
+// func (*Pprof) Index(c *dav.Context) {
+// 	pprof.Index(c.W, c.R)
+// }
 
-func (*Pprof) Cont(c *dav.Context) {
-	switch c.P.ByName("name") {
+func (*Pprof) Index(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	switch p.ByName("name") {
 	case "profile":
-		pprof.Profile(c.W, c.R)
+		pprof.Profile(w, r)
 	case "symbol":
-		pprof.Symbol(c.W, c.R)
+		pprof.Symbol(w, r)
 	case "trace":
-		pprof.Trace(c.W, c.R)
+		pprof.Trace(w, r)
 	case "cmdline":
-		pprof.Cmdline(c.W, c.R)
+		pprof.Cmdline(w, r)
 	default:
-		pprof.Index(c.W, c.R)
+		pprof.Index(w, r)
 	}
 }
